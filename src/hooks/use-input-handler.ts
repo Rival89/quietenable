@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useInput } from "ink";
-import { GrokAgent, ChatEntry } from "../agent/grok-agent";
+import { QuietAgent, ChatEntry } from "../agent/quietenable-agent";
 import { ConfirmationService } from "../utils/confirmation-service";
 import { useEnhancedInput, Key } from "./use-enhanced-input";
 
@@ -8,7 +8,7 @@ import { filterCommandSuggestions } from "../ui/components/command-suggestions";
 import { loadModelConfig, updateCurrentModel } from "../utils/model-config";
 
 interface UseInputHandlerProps {
-  agent: GrokAgent;
+  agent: QuietAgent;
   chatHistory: ChatEntry[];
   setChatHistory: React.Dispatch<React.SetStateAction<ChatEntry[]>>;
   setIsProcessing: (processing: boolean) => void;
@@ -222,7 +222,7 @@ export function useInputHandler({
   const commandSuggestions: CommandSuggestion[] = [
     { command: "/help", description: "Show help information" },
     { command: "/clear", description: "Clear chat history" },
-    { command: "/models", description: "Switch Grok Model" },
+    { command: "/models", description: "Switch Model" },
     { command: "/commit-and-push", description: "AI commit & push to remote" },
     { command: "/exit", description: "Exit the application" },
   ];
@@ -258,7 +258,7 @@ export function useInputHandler({
     if (trimmedInput === "/help") {
       const helpEntry: ChatEntry = {
         type: "assistant",
-        content: `Grok CLI Help:
+        content: `QuietEnable Help:
 
 Built-in Commands:
   /clear      - Clear chat history
@@ -289,7 +289,7 @@ Direct Commands (executed immediately):
   touch <file>- Create empty file
 
 Model Configuration:
-  Edit ~/.grok/models.json to add custom models (Claude, GPT, Gemini, etc.)
+  Edit ~/.quietenable/models.json to add custom models (Claude, GPT, Gemini, etc.)
 
 For complex operations, just describe what you want in natural language.
 Examples:

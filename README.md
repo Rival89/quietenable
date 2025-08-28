@@ -1,36 +1,36 @@
-# Grok CLI
+# QuietEnable
 
-A conversational AI CLI tool powered by Grok with intelligent text editor capabilities and tool usage.
+A conversational AI CLI tool powered by OpenAI GPT-5 with optional Grok4 fallback and intelligent text editor capabilities.
 
 <img width="980" height="435" alt="Screenshot 2025-07-21 at 13 35 41" src="https://github.com/user-attachments/assets/192402e3-30a8-47df-9fc8-a084c5696e78" />
 
 ## Features
 
-- **🤖 Conversational AI**: Natural language interface powered by Grok-3
+- **🤖 Conversational AI**: Natural language interface powered by GPT-5 (with Grok4 fallback)
 - **📝 Smart File Operations**: AI automatically uses tools to view, create, and edit files
 - **⚡ Bash Integration**: Execute shell commands through natural conversation
 - **🔧 Automatic Tool Selection**: AI intelligently chooses the right tools for your requests
 - **🚀 Morph Fast Apply**: Optional high-speed code editing at 4,500+ tokens/sec with 98% accuracy
 - **🔌 MCP Tools**: Extend capabilities with Model Context Protocol servers (Linear, GitHub, etc.)
 - **💬 Interactive UI**: Beautiful terminal interface built with Ink
-- **🌍 Global Installation**: Install and use anywhere with `npm i -g @vibe-kit/grok-cli`
+- **🌍 Global Installation**: Install and use anywhere with `npm i -g @vibe-kit/quietenable`
 
 ## Installation
 
 ### Prerequisites
 - Node.js 16+ 
-- Grok API key from X.AI
+- OpenAI API key
 - (Optional, Recommended) Morph API key for Fast Apply editing
 
 ### Global Installation (Recommended)
 ```bash
-npm install -g @vibe-kit/grok-cli
+npm install -g @vibe-kit/quietenable
 ```
 
 ### Local Development
 ```bash
 git clone <repository>
-cd grok-cli
+cd quietenable
 npm install
 npm run build
 npm link
@@ -38,13 +38,13 @@ npm link
 
 ## Setup
 
-1. Get your Grok API key from [X.AI](https://x.ai)
+1. Get your OpenAI API key from [OpenAI](https://platform.openai.com)
 
 2. Set up your API key (choose one method):
 
 **Method 1: Environment Variable**
 ```bash
-export GROK_API_KEY=your_api_key_here
+export OPENAI_API_KEY=your_api_key_here
 ```
 
 **Method 2: .env File**
@@ -55,11 +55,11 @@ cp .env.example .env
 
 **Method 3: Command Line Flag**
 ```bash
-grok --api-key your_api_key_here
+quietenable --api-key your_api_key_here
 ```
 
 **Method 4: User Settings File**
-Create `~/.grok/user-settings.json`:
+Create `~/.quietenable/user-settings.json`:
 ```json
 {
   "apiKey": "your_api_key_here"
@@ -83,20 +83,20 @@ MORPH_API_KEY=your_morph_api_key_here
 
 ### Custom Base URL (Optional)
 
-By default, the CLI uses `https://api.x.ai/v1` as the Grok API endpoint. You can configure a custom endpoint if needed (choose one method):
+By default, the CLI uses `https://api.openai.com/v1` as the OpenAI API endpoint. You can configure a custom endpoint if needed (choose one method):
 
 **Method 1: Environment Variable**
 ```bash
-export GROK_BASE_URL=https://your-custom-endpoint.com/v1
+export OPENAI_BASE_URL=https://your-custom-endpoint.com/v1
 ```
 
 **Method 2: Command Line Flag**
 ```bash
-grok --api-key your_api_key_here --base-url https://your-custom-endpoint.com/v1
+quietenable --api-key your_api_key_here --base-url https://your-custom-endpoint.com/v1
 ```
 
 **Method 3: User Settings File**
-Add to `~/.grok/user-settings.json`:
+Add to `~/.quietenable/user-settings.json`:
 ```json
 {
   "apiKey": "your_api_key_here",
@@ -106,15 +106,15 @@ Add to `~/.grok/user-settings.json`:
 
 ## Configuration Files
 
-Grok CLI uses two types of configuration files to manage settings:
+QuietEnable uses two types of configuration files to manage settings:
 
-### User-Level Settings (`~/.grok/user-settings.json`)
+### User-Level Settings (`~/.quietenable/user-settings.json`)
 
 This file stores **global settings** that apply across all projects. These settings rarely change and include:
 
-- **API Key**: Your Grok API key
+- **API Key**: Your OpenAI API key
 - **Base URL**: Custom API endpoint (if needed)
-- **Default Model**: Your preferred model (e.g., `grok-4-latest`)
+- **Default Model**: Your preferred model (e.g., `gpt-5`)
 - **Available Models**: List of models you can use
 
 **Example:**
@@ -132,7 +132,7 @@ This file stores **global settings** that apply across all projects. These setti
 }
 ```
 
-### Project-Level Settings (`.grok/settings.json`)
+### Project-Level Settings (`.quietenable/settings.json`)
 
 This file stores **project-specific settings** in your current working directory. It includes:
 
@@ -159,17 +159,17 @@ This file stores **project-specific settings** in your current working directory
 1. **Global Defaults**: User-level settings provide your default preferences
 2. **Project Override**: Project-level settings override defaults for specific projects
 3. **Directory-Specific**: When you change directories, project settings are loaded automatically
-4. **Fallback Logic**: Project model → User default model → System default (`grok-4-latest`)
+4. **Fallback Logic**: Project model → User default model → System default (`gpt-5`)
 
 This means you can have different models for different projects while maintaining consistent global settings like your API key.
 
 ### Using Other API Providers
 
-**Important**: Grok CLI uses **OpenAI-compatible APIs**. You can use any provider that implements the OpenAI chat completions standard.
+**Important**: QuietEnable uses **OpenAI-compatible APIs**. You can use any provider that implements the OpenAI chat completions standard.
 
 **Popular Providers**:
-- **X.AI (Grok)**: `https://api.x.ai/v1` (default)
-- **OpenAI**: `https://api.openai.com/v1`
+- **OpenAI**: `https://api.openai.com/v1` (default)
+- **X.AI (Grok)**: `https://api.x.ai/v1`
 - **OpenRouter**: `https://openrouter.ai/api/v1`
 - **Groq**: `https://api.groq.com/openai/v1`
 
@@ -193,7 +193,7 @@ This means you can have different models for different projects while maintainin
 
 Start the conversational AI assistant:
 ```bash
-grok
+quietenable
 ```
 
 Or specify a working directory:
@@ -219,7 +219,7 @@ This mode is particularly useful for:
 
 ### Tool Execution Control
 
-By default, Grok CLI allows up to 400 tool execution rounds to handle complex multi-step tasks. You can control this behavior:
+By default, QuietEnable allows up to 400 tool execution rounds to handle complex multi-step tasks. You can control this behavior:
 
 ```bash
 # Limit tool rounds for faster execution on simple tasks
@@ -244,7 +244,7 @@ You can specify which AI model to use with the `--model` parameter or `GROK_MODE
 
 **Method 1: Command Line Flag**
 ```bash
-# Use Grok models
+# Use models
 grok --model grok-4-latest
 grok --model grok-3-latest
 grok --model grok-3-fast
@@ -261,27 +261,27 @@ grok
 ```
 
 **Method 3: User Settings File**
-Add to `~/.grok/user-settings.json`:
+Add to `~/.quietenable/user-settings.json`:
 ```json
 {
   "apiKey": "your_api_key_here",
-  "defaultModel": "grok-4-latest"
+  "defaultModel": "gpt-5"
 }
 ```
 
-**Model Priority**: `--model` flag > `GROK_MODEL` environment variable > user default model > system default (grok-4-latest)
+**Model Priority**: `--model` flag > `QUIET_MODEL` environment variable > user default model > system default (gpt-5)
 
 ### Command Line Options
 
 ```bash
-grok [options]
+quietenable [options]
 
 Options:
   -V, --version          output the version number
   -d, --directory <dir>  set working directory
-  -k, --api-key <key>    Grok API key (or set GROK_API_KEY env var)
-  -u, --base-url <url>   Grok API base URL (or set GROK_BASE_URL env var)
-  -m, --model <model>    AI model to use (e.g., grok-4-latest, grok-3-latest) (or set GROK_MODEL env var)
+  -k, --api-key <key>    OpenAI API key (or set OPENAI_API_KEY env var)
+  -u, --base-url <url>   OpenAI API base URL (or set OPENAI_BASE_URL env var)
+  -m, --model <model>    AI model to use (e.g., gpt-5, grok-4-latest) (or set QUIET_MODEL env var)
   -p, --prompt <prompt>  process a single prompt and exit (headless mode)
   --max-tool-rounds <rounds>  maximum number of tool execution rounds (default: 400)
   -h, --help             display help for command
@@ -289,15 +289,15 @@ Options:
 
 ### Custom Instructions
 
-You can provide custom instructions to tailor Grok's behavior to your project by creating a `.grok/GROK.md` file in your project directory:
+You can provide custom instructions to tailor QuietEnable's behavior to your project by creating a `.quietenable/QUIET.md` file in your project directory:
 
 ```bash
-mkdir .grok
+mkdir .quietenable
 ```
 
-Create `.grok/GROK.md` with your custom instructions:
+Create `.quietenable/QUIET.md` with your custom instructions:
 ```markdown
-# Custom Instructions for Grok CLI
+# Custom Instructions for QuietEnable
 
 Always use TypeScript for any new code files.
 When creating React components, use functional components with hooks.
@@ -306,11 +306,11 @@ Always add JSDoc comments for public functions and interfaces.
 Follow the existing code style and patterns in this project.
 ```
 
-Grok will automatically load and follow these instructions when working in your project directory. The custom instructions are added to Grok's system prompt and take priority over default behavior.
+QuietEnable will automatically load and follow these instructions when working in your project directory. The custom instructions are added to QuietEnable's system prompt and take priority over default behavior.
 
 ## Morph Fast Apply (Optional)
 
-Grok CLI supports Morph's Fast Apply model for high-speed code editing at **4,500+ tokens/sec with 98% accuracy**. This is an optional feature that provides lightning-fast file editing capabilities.
+QuietEnable supports Morph's Fast Apply model for high-speed code editing at **4,500+ tokens/sec with 98% accuracy**. This is an optional feature that provides lightning-fast file editing capabilities.
 
 **Setup**: Configure your Morph API key following the [setup instructions](#setup) above.
 
@@ -339,7 +339,7 @@ The AI will automatically choose between `edit_file` (Morph) for complex changes
 
 ## MCP Tools
 
-Grok CLI supports MCP (Model Context Protocol) servers, allowing you to extend the AI assistant with additional tools and capabilities.
+QuietEnable supports MCP (Model Context Protocol) servers, allowing you to extend the AI assistant with additional tools and capabilities.
 
 ### Adding MCP Tools
 

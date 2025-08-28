@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { addMCPServer, removeMCPServer, loadMCPConfig, PREDEFINED_SERVERS } from '../mcp/config';
-import { getMCPManager } from '../grok/tools';
+import { getMCPManager } from '../backend/tools';
 import { MCPServerConfig } from '../mcp/client';
 import chalk from 'chalk';
 
