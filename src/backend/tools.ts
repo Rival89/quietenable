@@ -1,8 +1,8 @@
-import { GrokTool } from "./client";
+import { AITool } from "./client";
 import { MCPManager, MCPTool } from "../mcp/client";
 import { loadMCPConfig } from "../mcp/config";
 
-const BASE_GROK_TOOLS: GrokTool[] = [
+const BASE_QUIET_TOOLS: AITool[] = [
   {
     type: "function",
     function: {
@@ -244,7 +244,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
 ];
 
 // Morph Fast Apply tool (conditional)
-const MORPH_EDIT_TOOL: GrokTool = {
+const MORPH_EDIT_TOOL: AITool = {
   type: "function",
   function: {
     name: "edit_file",
@@ -271,8 +271,8 @@ const MORPH_EDIT_TOOL: GrokTool = {
 };
 
 // Function to build tools array conditionally
-function buildGrokTools(): GrokTool[] {
-  const tools = [...BASE_GROK_TOOLS];
+function buildQuietTools(): AITool[] {
+  const tools = [...BASE_QUIET_TOOLS];
   
   // Add Morph Fast Apply tool if API key is available
   if (process.env.MORPH_API_KEY) {
@@ -283,7 +283,7 @@ function buildGrokTools(): GrokTool[] {
 }
 
 // Export dynamic tools array
-export const GROK_TOOLS: GrokTool[] = buildGrokTools();
+export const QUIET_TOOLS: AITool[] = buildQuietTools();
 
 // Global MCP manager instance
 let mcpManager: MCPManager | null = null;
@@ -339,7 +339,7 @@ export async function initializeMCPServers(): Promise<void> {
   }
 }
 
-export function convertMCPToolToGrokTool(mcpTool: MCPTool): GrokTool {
+export function convertMCPToolToQuietTool(mcpTool: MCPTool): AITool {
   return {
     type: "function",
     function: {
@@ -354,22 +354,22 @@ export function convertMCPToolToGrokTool(mcpTool: MCPTool): GrokTool {
   };
 }
 
-export function addMCPToolsToGrokTools(baseTools: GrokTool[]): GrokTool[] {
+export function addMCPToolsToQuietTools(baseTools: AITool[]): AITool[] {
   if (!mcpManager) {
     return baseTools;
   }
   
   const mcpTools = mcpManager.getTools();
-  const grokMCPTools = mcpTools.map(convertMCPToolToGrokTool);
-  
-  return [...baseTools, ...grokMCPTools];
+  const quietMCPTools = mcpTools.map(convertMCPToolToQuietTool);
+
+  return [...baseTools, ...quietMCPTools];
 }
 
-export async function getAllGrokTools(): Promise<GrokTool[]> {
+export async function getAllQuietTools(): Promise<AITool[]> {
   const manager = getMCPManager();
   // Try to initialize servers if not already done, but don't block
   manager.ensureServersInitialized().catch(() => {
     // Ignore initialization errors to avoid blocking
   });
-  return addMCPToolsToGrokTools(GROK_TOOLS);
+  return addMCPToolsToQuietTools(QUIET_TOOLS);
 }

@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 
 /**
- * User-level settings stored in ~/.grok/user-settings.json
+ * User-level settings stored in ~/.quietenable/user-settings.json
  * These are global settings that apply across all projects
  */
 export interface UserSettings {
@@ -14,7 +14,7 @@ export interface UserSettings {
 }
 
 /**
- * Project-level settings stored in .grok/settings.json
+ * Project-level settings stored in .quietenable/settings.json
  * These are project-specific settings
  */
 export interface ProjectSettings {
@@ -26,13 +26,11 @@ export interface ProjectSettings {
  * Default values for user settings
  */
 const DEFAULT_USER_SETTINGS: Partial<UserSettings> = {
-  baseURL: "https://api.x.ai/v1",
-  defaultModel: "grok-4-latest",
+  baseURL: "https://api.openai.com/v1",
+  defaultModel: "gpt-5",
   models: [
-    "grok-4-latest",
-    "grok-3-latest", 
-    "grok-3-fast",
-    "grok-3-mini-fast"
+    "gpt-5",
+    "grok-4-latest"
   ]
 };
 
@@ -40,7 +38,7 @@ const DEFAULT_USER_SETTINGS: Partial<UserSettings> = {
  * Default values for project settings
  */
 const DEFAULT_PROJECT_SETTINGS: Partial<ProjectSettings> = {
-  model: "grok-4-latest"
+  model: "gpt-5"
 };
 
 /**
@@ -53,11 +51,11 @@ export class SettingsManager {
   private projectSettingsPath: string;
   
   private constructor() {
-    // User settings path: ~/.grok/user-settings.json
-    this.userSettingsPath = path.join(os.homedir(), '.grok', 'user-settings.json');
-    
-    // Project settings path: .grok/settings.json (in current working directory)
-    this.projectSettingsPath = path.join(process.cwd(), '.grok', 'settings.json');
+    // User settings path: ~/.quietenable/user-settings.json
+    this.userSettingsPath = path.join(os.homedir(), '.quietenable', 'user-settings.json');
+
+    // Project settings path: .quietenable/settings.json (in current working directory)
+    this.projectSettingsPath = path.join(process.cwd(), '.quietenable', 'settings.json');
   }
   
   /**
@@ -81,7 +79,7 @@ export class SettingsManager {
   }
   
   /**
-   * Load user settings from ~/.grok/user-settings.json
+   * Load user settings from ~/.quietenable/user-settings.json
    */
   public loadUserSettings(): UserSettings {
     try {
@@ -103,7 +101,7 @@ export class SettingsManager {
   }
   
   /**
-   * Save user settings to ~/.grok/user-settings.json
+   * Save user settings to ~/.quietenable/user-settings.json
    */
   public saveUserSettings(settings: Partial<UserSettings>): void {
     try {
@@ -152,7 +150,7 @@ export class SettingsManager {
   }
   
   /**
-   * Load project settings from .grok/settings.json
+   * Load project settings from .quietenable/settings.json
    */
   public loadProjectSettings(): ProjectSettings {
     try {
@@ -174,7 +172,7 @@ export class SettingsManager {
   }
   
   /**
-   * Save project settings to .grok/settings.json
+   * Save project settings to .quietenable/settings.json
    */
   public saveProjectSettings(settings: Partial<ProjectSettings>): void {
     try {
@@ -238,7 +236,7 @@ export class SettingsManager {
       return userDefaultModel;
     }
     
-    return DEFAULT_PROJECT_SETTINGS.model || 'grok-4-latest';
+    return DEFAULT_PROJECT_SETTINGS.model || 'gpt-5';
   }
   
   /**
@@ -261,7 +259,7 @@ export class SettingsManager {
    */
   public getApiKey(): string | undefined {
     // First check environment variable
-    const envApiKey = process.env.GROK_API_KEY;
+    const envApiKey = process.env.OPENAI_API_KEY;
     if (envApiKey) {
       return envApiKey;
     }
@@ -275,14 +273,14 @@ export class SettingsManager {
    */
   public getBaseURL(): string {
     // First check environment variable
-    const envBaseURL = process.env.GROK_BASE_URL;
+    const envBaseURL = process.env.OPENAI_BASE_URL;
     if (envBaseURL) {
       return envBaseURL;
     }
     
     // Then check user settings
     const userBaseURL = this.getUserSetting('baseURL');
-    return userBaseURL || DEFAULT_USER_SETTINGS.baseURL || 'https://api.x.ai/v1';
+    return userBaseURL || DEFAULT_USER_SETTINGS.baseURL || 'https://api.openai.com/v1';
   }
 }
 
