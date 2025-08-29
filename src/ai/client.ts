@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat";
+import { normalizeTokenParam } from "../utils/normalize-token-param";
 
 export type QEMessage = ChatCompletionMessageParam;
 
@@ -95,26 +96,26 @@ export class QuietEnableClient {
     searchOptions?: SearchOptions
   ): Promise<QEResponse> {
     try {
-      const requestPayload: any = {
+      const basePayload: any = {
         model: model || this.currentModel,
         messages,
         tools: tools || [],
         tool_choice: tools && tools.length > 0 ? "auto" : undefined,
         temperature: 0.7,
-        // GPT-5 uses `max_completion_tokens` instead of `max_tokens`
-        max_completion_tokens: 4000,
+        max_tokens: 4000,
       };
+
+      if (searchOptions?.search_parameters) {
+        basePayload.search_parameters = searchOptions.search_parameters;
+      }
+
+      const requestPayload = normalizeTokenParam({ ...basePayload }, "openai");
 
       if (this.verbosity) {
         requestPayload.verbosity = this.verbosity;
       }
       if (this.reasoningEffort) {
         requestPayload.reasoning_effort = this.reasoningEffort;
-      }
-
-      // Add search parameters if specified
-      if (searchOptions?.search_parameters) {
-        requestPayload.search_parameters = searchOptions.search_parameters;
       }
 
       try {
@@ -124,14 +125,10 @@ export class QuietEnableClient {
         return response as QEResponse;
       } catch {
         // Fallback to Grok4 if OpenAI GPT-5 request fails
-        const fallbackPayload = { ...requestPayload, model: "grok-4-latest" };
-        delete fallbackPayload.verbosity;
-        delete fallbackPayload.reasoning_effort;
-        // Grok-4 expects `max_tokens`, so translate the parameter name
-        if (fallbackPayload.max_completion_tokens !== undefined) {
-          fallbackPayload.max_tokens = fallbackPayload.max_completion_tokens;
-          delete fallbackPayload.max_completion_tokens;
-        }
+        const fallbackPayload = normalizeTokenParam(
+          { ...basePayload, model: "grok-4-latest" },
+          "grok"
+        );
         const response = await this.grokClient.chat.completions.create(
           fallbackPayload
         );
@@ -149,15 +146,21 @@ export class QuietEnableClient {
     searchOptions?: SearchOptions
   ): AsyncGenerator<any, void, unknown> {
     try {
-      const requestPayload: any = {
+      const basePayload: any = {
         model: model || this.currentModel,
         messages,
         tools: tools || [],
         tool_choice: tools && tools.length > 0 ? "auto" : undefined,
         temperature: 0.7,
-        max_completion_tokens: 4000,
+        max_tokens: 4000,
         stream: true,
       };
+
+      if (searchOptions?.search_parameters) {
+        basePayload.search_parameters = searchOptions.search_parameters;
+      }
+
+      const requestPayload = normalizeTokenParam({ ...basePayload }, "openai");
 
       if (this.verbosity) {
         requestPayload.verbosity = this.verbosity;
@@ -166,24 +169,16 @@ export class QuietEnableClient {
         requestPayload.reasoning_effort = this.reasoningEffort;
       }
 
-      // Add search parameters if specified
-      if (searchOptions?.search_parameters) {
-        requestPayload.search_parameters = searchOptions.search_parameters;
-      }
-
       let stream: any;
       try {
         stream = await this.openaiClient.chat.completions.create(
           requestPayload
         );
       } catch {
-        const fallbackPayload = { ...requestPayload, model: "grok-4-latest" };
-        delete fallbackPayload.verbosity;
-        delete fallbackPayload.reasoning_effort;
-        if (fallbackPayload.max_completion_tokens !== undefined) {
-          fallbackPayload.max_tokens = fallbackPayload.max_completion_tokens;
-          delete fallbackPayload.max_completion_tokens;
-        }
+        const fallbackPayload = normalizeTokenParam(
+          { ...basePayload, model: "grok-4-latest" },
+          "grok"
+        );
         stream = await this.grokClient.chat.completions.create(
           fallbackPayload
         );
