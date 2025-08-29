@@ -1,8 +1,8 @@
-import { QETool } from "./client";
+import { AITool } from "./client";
 import { MCPManager, MCPTool } from "../mcp/client";
 import { loadMCPConfig } from "../mcp/config";
 
-const BASE_QE_TOOLS: QETool[] = [
+const BASE_QE_TOOLS: AITool[] = [
   {
     type: "function",
     function: {
@@ -244,7 +244,7 @@ const BASE_QE_TOOLS: QETool[] = [
 ];
 
 // Morph Fast Apply tool (conditional)
-const MORPH_EDIT_TOOL: QETool = {
+const MORPH_EDIT_TOOL: AITool = {
   type: "function",
   function: {
     name: "edit_file",
@@ -271,7 +271,7 @@ const MORPH_EDIT_TOOL: QETool = {
 };
 
 // Function to build tools array conditionally
-function buildQETools(): QETool[] {
+function buildQETools(): AITool[] {
   const tools = [...BASE_QE_TOOLS];
   
   // Add Morph Fast Apply tool if API key is available
@@ -283,7 +283,7 @@ function buildQETools(): QETool[] {
 }
 
 // Export dynamic tools array
-export const QUIETENABLE_TOOLS: QETool[] = buildQETools();
+export const QUIETENABLE_TOOLS: AITool[] = buildQETools();
 
 // Global MCP manager instance
 let mcpManager: MCPManager | null = null;
@@ -339,7 +339,7 @@ export async function initializeMCPServers(): Promise<void> {
   }
 }
 
-export function convertMCPToolToQETool(mcpTool: MCPTool): QETool {
+export function convertMCPToolToQETool(mcpTool: MCPTool): AITool {
   return {
     type: "function",
     function: {
@@ -354,7 +354,7 @@ export function convertMCPToolToQETool(mcpTool: MCPTool): QETool {
   };
 }
 
-export function addMCPToolsToQETools(baseTools: QETool[]): QETool[] {
+export function addMCPToolsToQETools(baseTools: AITool[]): AITool[] {
   if (!mcpManager) {
     return baseTools;
   }
@@ -365,7 +365,7 @@ export function addMCPToolsToQETools(baseTools: QETool[]): QETool[] {
   return [...baseTools, ...qeMCPTools];
 }
 
-export async function getAllQETools(): Promise<QETool[]> {
+export async function getAllQETools(): Promise<AITool[]> {
   const manager = getMCPManager();
   // Try to initialize servers if not already done, but don't block
   manager.ensureServersInitialized().catch(() => {
