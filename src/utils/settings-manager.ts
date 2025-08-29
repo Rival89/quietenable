@@ -7,10 +7,12 @@ import * as os from 'os';
  * These are global settings that apply across all projects
  */
 export interface UserSettings {
-  apiKey?: string;           // Grok API key
+  apiKey?: string;           // OpenAI API key
   baseURL?: string;          // API base URL
   defaultModel?: string;     // User's preferred default model
   models?: string[];         // Available models list
+  verbosity?: "low" | "medium" | "high"; // Response verbosity
+  reasoningEffort?: "minimal" | "low" | "medium" | "high"; // Reasoning effort level
 }
 
 /**
@@ -19,6 +21,8 @@ export interface UserSettings {
  */
 export interface ProjectSettings {
   model?: string;            // Current model for this project
+  verbosity?: "low" | "medium" | "high"; // Response verbosity for project
+  reasoningEffort?: "minimal" | "low" | "medium" | "high"; // Reasoning effort for project
   mcpServers?: Record<string, any>; // MCP server configurations
 }
 
@@ -30,15 +34,22 @@ const DEFAULT_USER_SETTINGS: Partial<UserSettings> = {
   defaultModel: "gpt-5",
   models: [
     "gpt-5",
-    "grok-4-latest"
-  ]
+    "grok-4-latest",
+    "grok-3-latest",
+    "grok-3-fast",
+    "grok-3-mini-fast"
+  ],
+  verbosity: "medium",
+  reasoningEffort: "medium"
 };
 
 /**
  * Default values for project settings
  */
 const DEFAULT_PROJECT_SETTINGS: Partial<ProjectSettings> = {
-  model: "gpt-5"
+  model: "gpt-5",
+  verbosity: "medium",
+  reasoningEffort: "medium"
 };
 
 /**
@@ -114,7 +125,7 @@ export class SettingsManager {
           const content = fs.readFileSync(this.userSettingsPath, 'utf-8');
           const parsed = JSON.parse(content);
           existingSettings = { ...DEFAULT_USER_SETTINGS, ...parsed };
-        } catch (error) {
+        } catch {
           // If file is corrupted, use defaults
           console.warn('Corrupted user settings file, using defaults');
         }
@@ -185,7 +196,7 @@ export class SettingsManager {
           const content = fs.readFileSync(this.projectSettingsPath, 'utf-8');
           const parsed = JSON.parse(content);
           existingSettings = { ...DEFAULT_PROJECT_SETTINGS, ...parsed };
-        } catch (error) {
+        } catch {
           // If file is corrupted, use defaults
           console.warn('Corrupted project settings file, using defaults');
         }
@@ -253,13 +264,57 @@ export class SettingsManager {
     const models = this.getUserSetting('models');
     return models || DEFAULT_USER_SETTINGS.models || [];
   }
+
+  /**
+   * Get verbosity setting with precedence: env > project > user > default
+   */
+  public getVerbosity(): string {
+    const envVerbosity = process.env.QUIETENABLE_VERBOSITY;
+    if (envVerbosity) {
+      return envVerbosity;
+    }
+
+    const projectVerbosity = this.getProjectSetting('verbosity');
+    if (projectVerbosity) {
+      return projectVerbosity;
+    }
+
+    const userVerbosity = this.getUserSetting('verbosity');
+    return (
+      userVerbosity ||
+      DEFAULT_PROJECT_SETTINGS.verbosity ||
+      'medium'
+    );
+  }
+
+  /**
+   * Get reasoning effort setting with precedence: env > project > user > default
+   */
+  public getReasoningEffort(): string {
+    const envReasoning = process.env.QUIETENABLE_REASONING_EFFORT;
+    if (envReasoning) {
+      return envReasoning;
+    }
+
+    const projectReasoning = this.getProjectSetting('reasoningEffort');
+    if (projectReasoning) {
+      return projectReasoning;
+    }
+
+    const userReasoning = this.getUserSetting('reasoningEffort');
+    return (
+      userReasoning ||
+      DEFAULT_PROJECT_SETTINGS.reasoningEffort ||
+      'medium'
+    );
+  }
   
   /**
    * Get API key from user settings or environment
    */
   public getApiKey(): string | undefined {
     // First check environment variable
-    const envApiKey = process.env.OPENAI_API_KEY;
+    const envApiKey = process.env.QUIETENABLE_API_KEY;
     if (envApiKey) {
       return envApiKey;
     }
@@ -273,7 +328,7 @@ export class SettingsManager {
    */
   public getBaseURL(): string {
     // First check environment variable
-    const envBaseURL = process.env.OPENAI_BASE_URL;
+    const envBaseURL = process.env.QUIETENABLE_BASE_URL;
     if (envBaseURL) {
       return envBaseURL;
     }

@@ -1,11 +1,9 @@
-import { QuietClient, ChatMessage, AIToolCall } from "../backend/client";
+import { QuietEnableClient, QEMessage, QEToolCall } from "../ai/client";
 import {
-  QUIET_TOOLS,
-  addMCPToolsToQuietTools,
-  getAllQuietTools,
+  getAllQETools,
   getMCPManager,
   initializeMCPServers,
-} from "../backend/tools";
+} from "../ai/tools";
 import { loadMCPConfig } from "../mcp/config";
 import {
   TextEditorTool,
@@ -25,8 +23,8 @@ export interface ChatEntry {
   type: "user" | "assistant" | "tool_result" | "tool_call";
   content: string;
   timestamp: Date;
-  toolCalls?: AIToolCall[];
-  toolCall?: AIToolCall;
+  toolCalls?: QEToolCall[];
+  toolCall?: QEToolCall;
   toolResult?: { success: boolean; output?: string; error?: string };
   isStreaming?: boolean;
 }
@@ -34,14 +32,14 @@ export interface ChatEntry {
 export interface StreamingChunk {
   type: "content" | "tool_calls" | "tool_result" | "done" | "token_count";
   content?: string;
-  toolCalls?: AIToolCall[];
-  toolCall?: AIToolCall;
+  toolCalls?: QEToolCall[];
+  toolCall?: QEToolCall;
   toolResult?: ToolResult;
   tokenCount?: number;
 }
 
-export class QuietAgent extends EventEmitter {
-  private quietClient: QuietClient;
+export class QuietEnableAgent extends EventEmitter {
+  private qeClient: QuietEnableClient;
   private textEditor: TextEditorTool;
   private morphEditor: MorphEditorTool | null;
   private bash: BashTool;
@@ -49,7 +47,7 @@ export class QuietAgent extends EventEmitter {
   private confirmationTool: ConfirmationTool;
   private search: SearchTool;
   private chatHistory: ChatEntry[] = [];
-  private messages: ChatMessage[] = [];
+  private messages: QEMessage[] = [];
   private tokenCounter: TokenCounter;
   private abortController: AbortController | null = null;
   private mcpInitialized: boolean = false;
@@ -59,14 +57,24 @@ export class QuietAgent extends EventEmitter {
     apiKey: string,
     baseURL?: string,
     model?: string,
-    maxToolRounds?: number
+    maxToolRounds?: number,
+    verbosity?: string,
+    reasoningEffort?: string
   ) {
     super();
     const manager = getSettingsManager();
     const savedModel = manager.getCurrentModel();
     const modelToUse = model || savedModel || "gpt-5";
+    const verbosityToUse = verbosity || manager.getVerbosity();
+    const reasoningToUse = reasoningEffort || manager.getReasoningEffort();
     this.maxToolRounds = maxToolRounds || 400;
-    this.quietClient = new QuietClient(apiKey, modelToUse, baseURL);
+    this.qeClient = new QuietEnableClient(
+      apiKey,
+      modelToUse,
+      baseURL,
+      verbosityToUse,
+      reasoningToUse
+    );
     this.textEditor = new TextEditorTool();
     this.morphEditor = process.env.MORPH_API_KEY ? new MorphEditorTool() : null;
     this.bash = new BashTool();
@@ -168,7 +176,7 @@ Current working directory: ${process.cwd()}`,
   }
 
   private isGrokModel(): boolean {
-    const currentModel = this.quietClient.getCurrentModel();
+    const currentModel = this.qeClient.getCurrentModel();
     return currentModel.toLowerCase().includes("grok");
   }
 
@@ -187,8 +195,8 @@ Current working directory: ${process.cwd()}`,
     let toolRounds = 0;
 
     try {
-      const tools = await getAllQuietTools();
-      let currentResponse = await this.quietClient.chat(
+      const tools = await getAllQETools();
+      let currentResponse = await this.qeClient.chat(
         this.messages,
         tools,
         undefined,
@@ -200,7 +208,7 @@ Current working directory: ${process.cwd()}`,
         const assistantMessage = currentResponse.choices[0]?.message;
 
         if (!assistantMessage) {
-          throw new Error("No response from model");
+          throw new Error("No response from QuietEnable");
         }
 
         // Handle tool calls
@@ -282,7 +290,7 @@ Current working directory: ${process.cwd()}`,
           }
 
           // Get next response - this might contain more tool calls
-          currentResponse = await this.quietClient.chat(
+          currentResponse = await this.qeClient.chat(
             this.messages,
             tools,
             undefined,
@@ -404,8 +412,8 @@ Current working directory: ${process.cwd()}`,
         }
 
         // Stream response and accumulate
-        const tools = await getAllQuietTools();
-        const stream = this.quietClient.chatStream(
+        const tools = await getAllQETools();
+        const stream = this.qeClient.chatStream(
           this.messages,
           tools,
           undefined,
@@ -597,17 +605,18 @@ Current working directory: ${process.cwd()}`,
     }
   }
 
-  private async executeTool(toolCall: AIToolCall): Promise<ToolResult> {
+  private async executeTool(toolCall: QEToolCall): Promise<ToolResult> {
     try {
       const args = JSON.parse(toolCall.function.arguments);
 
       switch (toolCall.function.name) {
-        case "view_file":
+        case "view_file": {
           const range: [number, number] | undefined =
             args.start_line && args.end_line
               ? [args.start_line, args.end_line]
               : undefined;
           return await this.textEditor.view(args.path, range);
+        }
 
         case "create_file":
           return await this.textEditor.create(args.path, args.content);
@@ -675,7 +684,7 @@ Current working directory: ${process.cwd()}`,
     }
   }
 
-  private async executeMCPTool(toolCall: AIToolCall): Promise<ToolResult> {
+  private async executeMCPTool(toolCall: QEToolCall): Promise<ToolResult> {
     try {
       const args = JSON.parse(toolCall.function.arguments);
       const mcpManager = getMCPManager();
@@ -726,11 +735,11 @@ Current working directory: ${process.cwd()}`,
   }
 
   getCurrentModel(): string {
-    return this.quietClient.getCurrentModel();
+    return this.qeClient.getCurrentModel();
   }
 
   setModel(model: string): void {
-    this.quietClient.setModel(model);
+    this.qeClient.setModel(model);
     // Update token counter for new model
     this.tokenCounter.dispose();
     this.tokenCounter = createTokenCounter(model);

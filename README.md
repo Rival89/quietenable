@@ -1,19 +1,19 @@
-# QuietEnable
+# QuietEnable CLI
 
-A conversational AI CLI tool powered by OpenAI GPT-5 with optional Grok4 fallback and intelligent text editor capabilities.
+A conversational AI CLI tool powered by GPT-5 with Grok fallback and intelligent text editor capabilities.
 
 <img width="980" height="435" alt="Screenshot 2025-07-21 at 13 35 41" src="https://github.com/user-attachments/assets/192402e3-30a8-47df-9fc8-a084c5696e78" />
 
 ## Features
 
-- **🤖 Conversational AI**: Natural language interface powered by GPT-5 (with Grok4 fallback)
+- **🤖 Conversational AI**: Natural language interface powered by GPT-5
 - **📝 Smart File Operations**: AI automatically uses tools to view, create, and edit files
 - **⚡ Bash Integration**: Execute shell commands through natural conversation
 - **🔧 Automatic Tool Selection**: AI intelligently chooses the right tools for your requests
 - **🚀 Morph Fast Apply**: Optional high-speed code editing at 4,500+ tokens/sec with 98% accuracy
 - **🔌 MCP Tools**: Extend capabilities with Model Context Protocol servers (Linear, GitHub, etc.)
 - **💬 Interactive UI**: Beautiful terminal interface built with Ink
-- **🌍 Global Installation**: Install and use anywhere with `npm i -g @vibe-kit/quietenable`
+- **🌍 Global Installation**: Install and use anywhere with `npm i -g quietenable`
 
 ## Installation
 
@@ -24,7 +24,7 @@ A conversational AI CLI tool powered by OpenAI GPT-5 with optional Grok4 fallbac
 
 ### Global Installation (Recommended)
 ```bash
-npm install -g @vibe-kit/quietenable
+npm install -g quietenable
 ```
 
 ### Local Development
@@ -44,7 +44,7 @@ npm link
 
 **Method 1: Environment Variable**
 ```bash
-export OPENAI_API_KEY=your_api_key_here
+export QUIETENABLE_API_KEY=your_api_key_here
 ```
 
 **Method 2: .env File**
@@ -83,11 +83,11 @@ MORPH_API_KEY=your_morph_api_key_here
 
 ### Custom Base URL (Optional)
 
-By default, the CLI uses `https://api.openai.com/v1` as the OpenAI API endpoint. You can configure a custom endpoint if needed (choose one method):
+By default, the CLI uses `https://api.openai.com/v1` as the QuietEnable API endpoint. You can configure a custom endpoint if needed (choose one method):
 
 **Method 1: Environment Variable**
 ```bash
-export OPENAI_BASE_URL=https://your-custom-endpoint.com/v1
+export QUIETENABLE_BASE_URL=https://your-custom-endpoint.com/v1
 ```
 
 **Method 2: Command Line Flag**
@@ -121,9 +121,10 @@ This file stores **global settings** that apply across all projects. These setti
 ```json
 {
   "apiKey": "your_api_key_here",
-  "baseURL": "https://api.x.ai/v1",
-  "defaultModel": "grok-4-latest",
+  "baseURL": "https://api.openai.com/v1",
+  "defaultModel": "gpt-5",
   "models": [
+    "gpt-5",
     "grok-4-latest",
     "grok-3-latest",
     "grok-3-fast",
@@ -165,7 +166,7 @@ This means you can have different models for different projects while maintainin
 
 ### Using Other API Providers
 
-**Important**: QuietEnable uses **OpenAI-compatible APIs**. You can use any provider that implements the OpenAI chat completions standard.
+**Important**: QuietEnable uses **OpenAI-compatible APIs**. It defaults to OpenAI's endpoint but can target any provider that implements the chat completions standard.
 
 **Popular Providers**:
 - **OpenAI**: `https://api.openai.com/v1` (default)
@@ -198,17 +199,17 @@ quietenable
 
 Or specify a working directory:
 ```bash
-grok -d /path/to/project
+quietenable -d /path/to/project
 ```
 
 ### Headless Mode
 
 Process a single prompt and exit (useful for scripting and automation):
 ```bash
-grok --prompt "show me the package.json file"
-grok -p "create a new file called example.js with a hello world function"
-grok --prompt "run npm test and show me the results" --directory /path/to/project
-grok --prompt "complex task" --max-tool-rounds 50  # Limit tool usage for faster execution
+quietenable --prompt "show me the package.json file"
+quietenable -p "create a new file called example.js with a hello world function"
+quietenable --prompt "run npm test and show me the results" --directory /path/to/project
+quietenable --prompt "complex task" --max-tool-rounds 50  # Limit tool usage for faster execution
 ```
 
 This mode is particularly useful for:
@@ -223,14 +224,14 @@ By default, QuietEnable allows up to 400 tool execution rounds to handle complex
 
 ```bash
 # Limit tool rounds for faster execution on simple tasks
-grok --max-tool-rounds 10 --prompt "show me the current directory"
+quietenable --max-tool-rounds 10 --prompt "show me the current directory"
 
 # Increase limit for very complex tasks (use with caution)
-grok --max-tool-rounds 1000 --prompt "comprehensive code refactoring"
+quietenable --max-tool-rounds 1000 --prompt "comprehensive code refactoring"
 
 # Works with all modes
-grok --max-tool-rounds 20  # Interactive mode
-grok git commit-and-push --max-tool-rounds 30  # Git commands
+quietenable --max-tool-rounds 20  # Interactive mode
+quietenable git commit-and-push --max-tool-rounds 30  # Git commands
 ```
 
 **Use Cases**:
@@ -240,24 +241,27 @@ grok git commit-and-push --max-tool-rounds 30  # Git commands
 
 ### Model Selection
 
-You can specify which AI model to use with the `--model` parameter or `GROK_MODEL` environment variable:
+You can specify which AI model to use with the `--model` parameter or `QUIETENABLE_MODEL` environment variable:
 
 **Method 1: Command Line Flag**
 ```bash
-# Use models
-grok --model grok-4-latest
-grok --model grok-3-latest
-grok --model grok-3-fast
+# Use GPT-5 (default)
+quietenable --model gpt-5
+
+# Use Grok models (requires X.AI endpoint)
+quietenable --model grok-4-latest --base-url https://api.x.ai/v1
+quietenable --model grok-3-latest --base-url https://api.x.ai/v1
+quietenable --model grok-3-fast --base-url https://api.x.ai/v1
 
 # Use other models (with appropriate API endpoint)
-grok --model gemini-2.5-pro --base-url https://api-endpoint.com/v1
-grok --model claude-sonnet-4-20250514 --base-url https://api-endpoint.com/v1
+quietenable --model gemini-2.5-pro --base-url https://api-endpoint.com/v1
+quietenable --model claude-sonnet-4-20250514 --base-url https://api-endpoint.com/v1
 ```
 
 **Method 2: Environment Variable**
 ```bash
-export GROK_MODEL=grok-4-latest
-grok
+export QUIETENABLE_MODEL=gpt-5
+quietenable
 ```
 
 **Method 3: User Settings File**
@@ -269,7 +273,27 @@ Add to `~/.quietenable/user-settings.json`:
 }
 ```
 
-**Model Priority**: `--model` flag > `QUIET_MODEL` environment variable > user default model > system default (gpt-5)
+**Model Priority**: `--model` flag > `QUIETENABLE_MODEL` environment variable > user default model > system default (gpt-5)
+
+### Response Controls
+
+GPT-5 allows tuning responses for cost and accuracy. QuietEnable exposes two knobs:
+
+- `QUIETENABLE_VERBOSITY`: `low`, `medium`, or `high` (default: `medium`)
+- `QUIETENABLE_REASONING_EFFORT`: `minimal`, `low`, `medium`, or `high` (default: `medium`)
+
+Set them as environment variables:
+
+```bash
+export QUIETENABLE_VERBOSITY=low
+export QUIETENABLE_REASONING_EFFORT=minimal
+```
+
+or provide them via CLI flags:
+
+```bash
+quietenable --verbosity high --reasoning-effort high
+```
 
 ### Command Line Options
 
@@ -279,23 +303,25 @@ quietenable [options]
 Options:
   -V, --version          output the version number
   -d, --directory <dir>  set working directory
-  -k, --api-key <key>    OpenAI API key (or set OPENAI_API_KEY env var)
-  -u, --base-url <url>   OpenAI API base URL (or set OPENAI_BASE_URL env var)
-  -m, --model <model>    AI model to use (e.g., gpt-5, grok-4-latest) (or set QUIET_MODEL env var)
+  -k, --api-key <key>    OpenAI API key (or set QUIETENABLE_API_KEY env var)
+  -u, --base-url <url>   QuietEnable API base URL (or set QUIETENABLE_BASE_URL env var)
+  -m, --model <model>    AI model to use (e.g., gpt-5, grok-4-latest) (or set QUIETENABLE_MODEL env var)
   -p, --prompt <prompt>  process a single prompt and exit (headless mode)
   --max-tool-rounds <rounds>  maximum number of tool execution rounds (default: 400)
+  --verbosity <level>        response verbosity: low, medium, or high
+  --reasoning-effort <level> reasoning effort: minimal, low, medium, or high
   -h, --help             display help for command
 ```
 
 ### Custom Instructions
 
-You can provide custom instructions to tailor QuietEnable's behavior to your project by creating a `.quietenable/QUIET.md` file in your project directory:
+You can provide custom instructions to tailor QuietEnable's behavior to your project by creating a `.quietenable/QUIETENABLE.md` file in your project directory:
 
 ```bash
 mkdir .quietenable
 ```
 
-Create `.quietenable/QUIET.md` with your custom instructions:
+Create `.quietenable/QUIETENABLE.md` with your custom instructions:
 ```markdown
 # Custom Instructions for QuietEnable
 
@@ -331,8 +357,8 @@ When `MORPH_API_KEY` is configured:
 With Morph Fast Apply configured, you can request complex code changes:
 
 ```bash
-grok --prompt "refactor this function to use async/await and add error handling"
-grok -p "convert this class to TypeScript and add proper type annotations"
+quietenable --prompt "refactor this function to use async/await and add error handling"
+quietenable -p "convert this class to TypeScript and add proper type annotations"
 ```
 
 The AI will automatically choose between `edit_file` (Morph) for complex changes or `str_replace_editor` for simple replacements.
@@ -346,18 +372,18 @@ QuietEnable supports MCP (Model Context Protocol) servers, allowing you to exten
 #### Add a custom MCP server:
 ```bash
 # Add an stdio-based MCP server
-grok mcp add my-server --transport stdio --command "node" --args server.js
+quietenable mcp add my-server --transport stdio --command "node" --args server.js
 
 # Add an HTTP-based MCP server
-grok mcp add my-server --transport http --url "http://localhost:3000"
+quietenable mcp add my-server --transport http --url "http://localhost:3000"
 
 # Add with environment variables
-grok mcp add my-server --transport stdio --command "python" --args "-m" "my_mcp_server" --env "API_KEY=your_key"
+quietenable mcp add my-server --transport stdio --command "python" --args "-m" "my_mcp_server" --env "API_KEY=your_key"
 ```
 
 #### Add from JSON configuration:
 ```bash
-grok mcp add-json my-server '{"command": "node", "args": ["server.js"], "env": {"API_KEY": "your_key"}}'
+quietenable mcp add-json my-server '{"command": "node", "args": ["server.js"], "env": {"API_KEY": "your_key"}}'
 ```
 
 ### Linear Integration Example
@@ -366,7 +392,7 @@ To add Linear MCP tools for project management:
 
 ```bash
 # Add Linear MCP server
-grok mcp add linear --transport sse --url "https://mcp.linear.app/sse"
+quietenable mcp add linear --transport sse --url "https://mcp.linear.app/sse"
 ```
 
 This enables Linear tools like:
@@ -379,13 +405,13 @@ This enables Linear tools like:
 
 ```bash
 # List all configured servers
-grok mcp list
+quietenable mcp list
 
 # Test server connection
-grok mcp test server-name
+quietenable mcp test server-name
 
 # Remove a server
-grok mcp remove server-name
+quietenable mcp remove server-name
 ```
 
 ### Available Transport Types

@@ -1,7 +1,7 @@
 {
-  "name": "@vibe-kit/quietenable",
+  "name": "quietenable",
   "version": "0.1.0",
-  "description": "QuietEnable is a conversational AI CLI powered by OpenAI GPT-5 with Grok4 fallback.",
+  "description": "A GPT-5 powered command-line assistant with Grok fallback.",
   "main": "dist/index.js",
   "bin": {
     "quietenable": "dist/index.js"
@@ -10,8 +10,7 @@
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint:fix": "eslint . --fix",
+    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint . --ext .js,.jsx,.ts,.tsx",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

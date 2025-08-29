@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Box, Text, useInput, useApp } from "ink";
-import { QuietAgent } from "../../agent/quietenable-agent";
+import { QuietEnableAgent } from "../../agent/quietenable-agent";
 import { getSettingsManager } from "../../utils/settings-manager";
 
 interface ApiKeyInputProps {
-  onApiKeySet: (agent: QuietAgent) => void;
+  onApiKeySet: (agent: QuietEnableAgent) => void;
 }
 
 export default function ApiKeyInput({ onApiKeySet }: ApiKeyInputProps) {
@@ -49,23 +49,23 @@ export default function ApiKeyInput({ onApiKeySet }: ApiKeyInputProps) {
     setIsSubmitting(true);
     try {
       const apiKey = input.trim();
-      const agent = new QuietAgent(apiKey);
+      const agent = new QuietEnableAgent(apiKey);
       
       // Set environment variable for current process
-      process.env.OPENAI_API_KEY = apiKey;
+      process.env.QUIETENABLE_API_KEY = apiKey;
       
       // Save to user settings
       try {
         const manager = getSettingsManager();
         manager.updateUserSetting('apiKey', apiKey);
         console.log(`\n✅ API key saved to ~/.quietenable/user-settings.json`);
-      } catch (error) {
+      } catch {
         console.log('\n⚠️ Could not save API key to settings file');
         console.log('API key set for current session only');
       }
       
       onApiKeySet(agent);
-    } catch (error: any) {
+    } catch {
       setError("Invalid API key format");
       setIsSubmitting(false);
     }
